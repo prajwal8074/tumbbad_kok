@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -20,12 +19,18 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 motionDirection;
     private Vector3 previousPosition;
 
+    public float interactionDistance = 2f;
+    public TextMeshProUGUI pickupText;
+    private IInteractable currentInteractable;
+    private MonoBehaviour currentOutlineScript;
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
         previousPosition = transform.position;
         motionDirection = Vector3.zero;
+        pickupText.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
@@ -93,8 +98,67 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        // Interaction
+        Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, interactionDistance))
+        {
+            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+
+            if (interactable != null)
+            {
+                currentInteractable = interactable;
+                pickupText.text = interactable.InteractionPrompt;
+                pickupText.gameObject.SetActive(true);
+
+                // Outline Logic
+                MonoBehaviour outlineScript = hit.collider.GetComponent<Outline>(); // Getting the script
+                // Check if the script exists and if it derives from the outline script
+                if (outlineScript != null)
+                {
+                    currentOutlineScript = outlineScript;
+                    currentOutlineScript.enabled = true; // Enable the outline script
+                }
+
+                if (interactable.buttonClicked)
+                {
+                    interactable.Interact(gameObject);
+                    currentInteractable = null;
+                    pickupText.gameObject.SetActive(false);
+                    if (currentOutlineScript != null)
+                    {
+                        currentOutlineScript.enabled = false;
+                        currentOutlineScript = null;
+                    }
+                }
+            }
+            else
+            {
+                ClearInteractable();
+            }
+        }
+        else
+        {
+            ClearInteractable();
+        }
+
         //keep last
         motionDirection = (transform.position - previousPosition).normalized;
         previousPosition = transform.position;
+    }
+
+    private void ClearInteractable()
+    {
+        if (currentInteractable != null)
+        {
+            currentInteractable = null;
+            pickupText.gameObject.SetActive(false);
+            if (currentOutlineScript != null)
+            {
+                currentOutlineScript.enabled = false;
+                currentOutlineScript = null;
+            }
+        }
     }
 }
