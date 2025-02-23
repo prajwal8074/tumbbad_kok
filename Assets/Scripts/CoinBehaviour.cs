@@ -29,7 +29,7 @@ public class CoinBehaviour : MonoBehaviour, IInteractable
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        sphereTransform = transform.parent;
+        sphereTransform = transform.parent.parent;
         sphereMeshCollider = sphereTransform.GetComponent<MeshCollider>();
         itemMeshCollider = GetComponent<BoxCollider>();
     }

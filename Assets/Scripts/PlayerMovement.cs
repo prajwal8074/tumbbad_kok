@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 8f;
     public float slideForce = 2f;
     public float slideFriction = 0.95f; // Adjust this for "slipperiness"
+    public Light sunLight;
 
     private CharacterController controller;
     private Vector3 moveDirection;
@@ -26,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        sunLight.enabled = false;
         Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
         previousPosition = transform.position;
