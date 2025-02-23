@@ -13,12 +13,17 @@ public class PlayerMovement : MonoBehaviour
     public float slideForce = 2f;
     public float slideFriction = 0.95f; // Adjust this for "slipperiness"
     public Light sunLight;
+    public float headBobFrequency = 2f; // Adjust to control bobbing speed
+    public float headBobAmplitude = 0.25f; // Adjust to control bobbing height
+    public Transform camera;
 
     private CharacterController controller;
     private Vector3 moveDirection;
     private float verticalVelocity;
     private Vector3 motionDirection;
     private Vector3 previousPosition;
+    private float headBobTime;
+    private Vector3 originalCameraPosition;
 
     public float interactionDistance = 2f;
     public TextMeshProUGUI pickupText;
@@ -33,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
         previousPosition = transform.position;
         motionDirection = Vector3.zero;
         pickupText.gameObject.SetActive(false);
+        originalCameraPosition = camera.localPosition;
     }
 
     // Update is called once per frame
@@ -64,6 +70,18 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             moveDirection = Vector3.zero; // No input, no movement
+        }
+
+        // Head Bobbing
+        if (isGrounded)
+        {
+            headBobTime += Time.deltaTime * headBobFrequency;
+            float verticalOffset = Mathf.Sin(headBobTime) * headBobAmplitude;
+            camera.localPosition = originalCameraPosition + Vector3.up * verticalOffset;
+        }
+        else
+        {
+            //camera.localPosition = originalCameraPosition; // Reset position when not moving
         }
 
         // Apply gravity
