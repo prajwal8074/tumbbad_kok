@@ -6,13 +6,12 @@ public class BagBehaviour : MonoBehaviour, IInteractable
     public int itemCount = 10; // Number of items to spawn
     public float throwForce = 1f; // Force applied to items
 
-    private bool LMBClicked = false;
+    private bool LMBUp = false;
+    private bool LMBDown = false;
 
     public string InteractionPrompt => $"{gameObject.name}";
-    public bool buttonClicked
-    {
-        get { return LMBClicked; }
-    }
+    public bool buttonDown => LMBDown;
+    public bool buttonUp => LMBUp;
 
     public void Interact(GameObject interactor)
     {
@@ -30,7 +29,8 @@ public class BagBehaviour : MonoBehaviour, IInteractable
     // Update is called once per frame
     void Update()
     {
-        LMBClicked = Input.GetMouseButtonDown(0);
+        LMBDown = Input.GetMouseButton(0);
+        LMBUp = Input.GetMouseButtonUp(0);
     }
 
     void SpawnItems()

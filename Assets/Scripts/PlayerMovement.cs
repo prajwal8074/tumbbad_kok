@@ -17,6 +17,7 @@ public class PlayerMovement : MonoBehaviour
     public float headBobAmplitude = 0.25f; // Adjust to control bobbing height
     public float idleBobFactor = 0.5f;
     public Camera playerCamera;
+    public GameObject arms;
 
     private CharacterController controller;
     private Vector3 moveDirection;
@@ -25,6 +26,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 previousPosition;
     private float headBobTime;
     private Vector3 originalCameraPosition;
+    private Vector3 originalArmsPosition;
 
     public float interactionDistance = 2f;
     public TextMeshProUGUI pickupText;
@@ -40,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
         motionDirection = Vector3.zero;
         pickupText.gameObject.SetActive(false);
         originalCameraPosition = playerCamera.transform.localPosition;
+        originalArmsPosition = arms.transform.localPosition;
     }
 
     // Update is called once per frame
@@ -51,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
         xRotation += mouseY;
         yRotation += mouseX;
 
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        xRotation = Mathf.Clamp(xRotation, -75f, 75f);
 
         transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
 
@@ -83,7 +86,9 @@ public class PlayerMovement : MonoBehaviour
         {
             headBobTime += Time.deltaTime * headBobFrequency * (moveDirection.magnitude == 0? idleBobFactor : 1f);
             float verticalOffset = Mathf.Sin(headBobTime) * headBobAmplitude * (moveDirection.magnitude == 0? idleBobFactor : 1f);
+            float armsOffset = Mathf.Sin(headBobTime-3.14f/6f) * headBobAmplitude/3f * (moveDirection.magnitude == 0? idleBobFactor : 1f);
             playerCamera.transform.localPosition = originalCameraPosition + Vector3.up * verticalOffset;
+            arms.transform.localPosition = originalArmsPosition + Vector3.up * armsOffset;
         }
         else
         {
@@ -144,7 +149,12 @@ public class PlayerMovement : MonoBehaviour
                     currentOutlineScript.enabled = true; // Enable the outline script
                 }
 
-                if (interactable.buttonClicked)
+                if (interactable.buttonDown)
+                {
+                    arms.transform.localEulerAngles = new Vector3(0, 60, 0);
+                }
+
+                if (interactable.buttonUp)
                 {
                     interactable.Interact(gameObject);
                     currentInteractable = null;
@@ -183,5 +193,6 @@ public class PlayerMovement : MonoBehaviour
                 currentOutlineScript = null;
             }
         }
+        arms.transform.localEulerAngles = new Vector3(0, 0, 0);
     }
 }

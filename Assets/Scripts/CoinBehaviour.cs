@@ -9,16 +9,15 @@ public class CoinBehaviour : MonoBehaviour, IInteractable
     private Vector3 fallingVelocity; // Store falling velocity
     private float tolerance = 0.001f; // Adjust this value
 
-    private bool LMBClicked = false;
+    private bool LMBUp = false;
+    private bool LMBDown = false;
 
     public float vDamping = 0.95f;
     public float bounce = 0.5f;
 
     public string InteractionPrompt => $"{gameObject.name}";
-    public bool buttonClicked
-    {
-        get { return LMBClicked; }
-    }
+    public bool buttonDown => LMBDown;
+    public bool buttonUp => LMBUp;
 
     public void Interact(GameObject interactor)
     {
@@ -36,7 +35,8 @@ public class CoinBehaviour : MonoBehaviour, IInteractable
 
     void Update() // Check for containment every frame
     {
-        LMBClicked = Input.GetMouseButtonDown(0);
+        LMBDown = Input.GetMouseButton(0);
+        LMBUp = Input.GetMouseButtonUp(0);
 
         Vector3 sphereCenter = sphereTransform.position;
         Vector3 direction = (transform.position - sphereCenter).normalized;
