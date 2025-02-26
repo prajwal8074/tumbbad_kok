@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     public float headBobFrequency = 2f; // Adjust to control bobbing speed
     public float headBobAmplitude = 0.25f; // Adjust to control bobbing height
     public float idleBobFactor = 0.5f;
+    public float armsRotationSpeed = 2f;
     public Camera playerCamera;
     public GameObject arms;
 
@@ -151,7 +152,9 @@ public class PlayerMovement : MonoBehaviour
 
                 if (interactable.buttonDown)
                 {
-                    arms.transform.localEulerAngles = new Vector3(0, 60, 0);
+                    float armsYRotation = arms.transform.localEulerAngles.y;
+                    if(armsYRotation < 60f)
+                        arms.transform.localEulerAngles = new Vector3(0, armsYRotation+1f*armsRotationSpeed, 0);
                 }
 
                 if (interactable.buttonUp)

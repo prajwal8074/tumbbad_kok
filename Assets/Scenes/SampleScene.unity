@@ -1194,6 +1194,7 @@ MonoBehaviour:
   headBobFrequency: 20
   headBobAmplitude: 0.25
   idleBobFactor: 0.33
+  armsRotationSpeed: 4
   playerCamera: {fileID: 330585545}
   arms: {fileID: 46796585}
   interactionDistance: 4
