@@ -1,2 +1,9 @@
 /Library/*
 /Logs/*
+/Temp/*
+/executable_Data/*
+/FPSTutorial_BurstDebugInformation_DoNotShip/*
+/executable.x86_64
+/executable_s.debug
+/UnityPlayer.so
+/UnityPlayer_s.debug

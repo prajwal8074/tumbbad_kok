@@ -1184,12 +1184,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb13582b13db7754abaaa57c89960c53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseSensitivity: 500
+  mouseSensitivity: 100
   moveSpeed: 10
   gravity: 10
   jumpForce: 8
-  slideForce: 10
-  slideFriction: 0.95
+  slideForce: 11
   sunLight: {fileID: 502219565}
   headBobFrequency: 20
   headBobAmplitude: 0.25

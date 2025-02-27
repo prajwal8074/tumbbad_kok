@@ -11,7 +11,6 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = 10f;
     public float jumpForce = 8f;
     public float slideForce = 2f;
-    public float slideFriction = 0.95f; // Adjust this for "slipperiness"
     public Light sunLight;
     public float headBobFrequency = 2f; // Adjust to control bobbing speed
     public float headBobAmplitude = 0.25f; // Adjust to control bobbing height
@@ -55,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
         xRotation += mouseY;
         yRotation += mouseX;
 
-        xRotation = Mathf.Clamp(xRotation, -75f, 75f);
+        xRotation = Mathf.Clamp(xRotation, -75f, 89f);
 
         transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
 
@@ -106,12 +105,6 @@ public class PlayerMovement : MonoBehaviour
             verticalVelocity = 0; // Reset on ground
         }
 
-        // Sliding (Slipperiness)
-        if (!isGrounded && moveDirection.magnitude > 0)
-        {
-            //moveDirection *= slideFriction; // Reduce velocity for sliding
-        }
-
         // Combine movement and gravity
         Vector3 finalMove = moveDirection + Vector3.up * verticalVelocity;
 
@@ -124,7 +117,9 @@ public class PlayerMovement : MonoBehaviour
 
         if (moveDirection.magnitude == 0)
         {
-            controller.Move(downDirection * slideForce * Vector3.Dot(motionDirection, Vector3.down) * Time.deltaTime);
+            float slopeFactor = Vector3.Dot(motionDirection, Vector3.down);
+            if(slopeFactor > Mathf.Cos(83f * Mathf.Deg2Rad))
+                controller.Move(downDirection * slideForce * slopeFactor * Time.deltaTime);
         }
 
         // Interaction
