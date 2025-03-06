@@ -15,6 +15,7 @@ public class HastarBehaviour : MonoBehaviour
     public float jumpAngle = 45f;
     public GameObject upperBound;
     public GameObject lowerBound;
+    public float playerHastarYDiff = 0.1f;
 
     private Rigidbody rb;
     private Animator animator;
@@ -41,16 +42,9 @@ public class HastarBehaviour : MonoBehaviour
             float speed = velocity.magnitude;
             //Debug.Log($"speed: {speed}");
 
-            Vector3 groundNormal = transform.up;
-            Vector3 lookDirection = (targetObject.position - transform.position).normalized;
-            // Project the Target Direction
-            projectedDirection = Vector3.ProjectOnPlane(lookDirection, groundNormal).normalized;
-
             if (speed > (minSpeed + stuckTimeElapsed) && !isJumping)
             {
-                // Rotate the Player
-                Quaternion targetRotation = Quaternion.LookRotation(projectedDirection, transform.up);
-                transform.rotation = targetRotation;
+                lookAt(targetObject.position);
             }
 
             MoveForward();
@@ -60,7 +54,7 @@ public class HastarBehaviour : MonoBehaviour
                 /*transform.Rotate(transform.right * -rotationSpeed * stuckTimeElapsed * Time.deltaTime);
                 if(stuckTimeElapsed == 0f)
                     rb.AddForce(transform.up * jumpImpulse, ForceMode.Impulse);*/
-                stuckTimeElapsed += Time.deltaTime;
+                //stuckTimeElapsed += Time.deltaTime;
             }else{
                 stuckTimeElapsed = 0f;
             }
@@ -84,24 +78,41 @@ public class HastarBehaviour : MonoBehaviour
     {
         if(!isJumping)
         {
-            if (other.gameObject == upperBound)
+            if (other.gameObject == upperBound && playerTransform.position.y - playerHastarYDiff < transform.position.y)
             {
+                lookAt(sphereTransform.position);
                 rb.angularVelocity = Vector3.zero;
-                rb.AddForce((transform.up + transform.forward/2f) * jumpForce * 2f, ForceMode.Impulse);
-                transform.Rotate(-jumpAngle, 0, 0, Space.Self);
+                rb.AddForce((transform.up + transform.forward/5f) * jumpForce * 2f, ForceMode.Impulse);
+                //Invoke("rotateJump", 2f);
                 isJumping = true;
                 Debug.Log("colUp");
             }else
-            if (other.gameObject == lowerBound)
+            if (other.gameObject == lowerBound && playerTransform.position.y - playerHastarYDiff > transform.position.y)
             {
                 rb.angularVelocity = Vector3.zero;
-                transform.Rotate(-jumpAngle, 0, 0, Space.Self);
+                transform.Rotate(Vector3.right * -jumpAngle);
                 rb.AddForce((transform.forward) * jumpForce, ForceMode.Impulse);
                 isJumping = true;
                 Debug.Log("colDown");
             }
             Invoke("toggleJump", 3f);
         }
+    }
+
+    void lookAt(Vector3 targetPosition)
+    {
+        Vector3 groundNormal = transform.up;
+        Vector3 lookDirection = (targetPosition - transform.position).normalized;
+        // Project the Target Direction
+        projectedDirection = Vector3.ProjectOnPlane(lookDirection, groundNormal).normalized;
+
+        Quaternion targetRotation = Quaternion.LookRotation(projectedDirection, transform.up);
+        transform.rotation = targetRotation;
+    }
+
+    void rotateJump()
+    {
+        transform.Rotate(Vector3.right * -jumpAngle);
     }
 
     void FixedUpdate()
