@@ -11,13 +11,17 @@ public class HastarBehaviour : MonoBehaviour
     public Transform playerTransform;
     public float minSpeed = 1f;
     public float targetSpeed = 10f;
-    //public float jumpImpulse = 5f;
+    public float jumpForce = 5f;
+    public float jumpAngle = 45f;
+    public GameObject upperBound;
+    public GameObject lowerBound;
 
     private Rigidbody rb;
     private Animator animator;
     private Transform targetObject;
     private Vector3 projectedDirection;
     private float stuckTimeElapsed = 0f;
+    private bool isJumping = false;
 
     void Start()
     {
@@ -35,14 +39,14 @@ public class HastarBehaviour : MonoBehaviour
 
             // 2. Calculate Speed
             float speed = velocity.magnitude;
-            Debug.Log($"speed: {speed}");
+            //Debug.Log($"speed: {speed}");
 
             Vector3 groundNormal = transform.up;
             Vector3 lookDirection = (targetObject.position - transform.position).normalized;
             // Project the Target Direction
             projectedDirection = Vector3.ProjectOnPlane(lookDirection, groundNormal).normalized;
 
-            if (speed > (minSpeed + stuckTimeElapsed))
+            if (speed > (minSpeed + stuckTimeElapsed) && !isJumping)
             {
                 // Rotate the Player
                 Quaternion targetRotation = Quaternion.LookRotation(projectedDirection, transform.up);
@@ -60,11 +64,10 @@ public class HastarBehaviour : MonoBehaviour
             }else{
                 stuckTimeElapsed = 0f;
             }
+            //Debug.Log($"stuck time: {stuckTimeElapsed}");
 
             // 3. Map Speed to Animation Speed Multiplier
             float speedMultiplier = Mathf.Clamp01(speed / maxSpeed);
-            if(speedMultiplier == 0f)
-                speedMultiplier = Mathf.Clamp01(minSpeed / maxSpeed);
 
             // 4. Set Animator Speed Parameter
             animator.SetFloat("speedFactor", speedMultiplier);
@@ -77,6 +80,30 @@ public class HastarBehaviour : MonoBehaviour
         }
     }
 
+    void OnTriggerEnter(Collider other)
+    {
+        if(!isJumping)
+        {
+            if (other.gameObject == upperBound)
+            {
+                rb.angularVelocity = Vector3.zero;
+                rb.AddForce((transform.up + transform.forward/2f) * jumpForce * 2f, ForceMode.Impulse);
+                transform.Rotate(-jumpAngle, 0, 0, Space.Self);
+                isJumping = true;
+                Debug.Log("colUp");
+            }else
+            if (other.gameObject == lowerBound)
+            {
+                rb.angularVelocity = Vector3.zero;
+                transform.Rotate(-jumpAngle, 0, 0, Space.Self);
+                rb.AddForce((transform.forward) * jumpForce, ForceMode.Impulse);
+                isJumping = true;
+                Debug.Log("colDown");
+            }
+            Invoke("toggleJump", 3f);
+        }
+    }
+
     void FixedUpdate()
     {
         if(rb.velocity.magnitude > (minSpeed + stuckTimeElapsed))
@@ -84,6 +111,11 @@ public class HastarBehaviour : MonoBehaviour
             ApplyCustomGravity();
             AlignToSphereSurface();
         }
+    }
+
+    void toggleJump()
+    {
+        isJumping = false;
     }
 
     void ApplyCustomGravity()
