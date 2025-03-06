@@ -16,6 +16,7 @@ public class HastarBehaviour : MonoBehaviour
     public GameObject upperBound;
     public GameObject lowerBound;
     public float playerHastarYDiff = 0.1f;
+    public Transform CenterTransform;
 
     private Rigidbody rb;
     private Animator animator;
@@ -80,16 +81,18 @@ public class HastarBehaviour : MonoBehaviour
         {
             if (other.gameObject == upperBound && playerTransform.position.y - playerHastarYDiff < transform.position.y)
             {
-                lookAt(sphereTransform.position);
+                lookTowards(Vector3.down);
                 rb.angularVelocity = Vector3.zero;
+                rb.velocity = Vector3.zero;
                 rb.AddForce((transform.up + transform.forward/5f) * jumpForce * 2f, ForceMode.Impulse);
-                //Invoke("rotateJump", 2f);
                 isJumping = true;
                 Debug.Log("colUp");
             }else
             if (other.gameObject == lowerBound && playerTransform.position.y - playerHastarYDiff > transform.position.y)
             {
+                lookTowards(transform.position - CenterTransform.position);
                 rb.angularVelocity = Vector3.zero;
+                rb.velocity = Vector3.zero;
                 transform.Rotate(Vector3.right * -jumpAngle);
                 rb.AddForce((transform.forward) * jumpForce, ForceMode.Impulse);
                 isJumping = true;
@@ -103,6 +106,17 @@ public class HastarBehaviour : MonoBehaviour
     {
         Vector3 groundNormal = transform.up;
         Vector3 lookDirection = (targetPosition - transform.position).normalized;
+        // Project the Target Direction
+        projectedDirection = Vector3.ProjectOnPlane(lookDirection, groundNormal).normalized;
+
+        Quaternion targetRotation = Quaternion.LookRotation(projectedDirection, transform.up);
+        transform.rotation = targetRotation;
+    }
+
+    void lookTowards(Vector3 lookDirection)
+    {
+        Vector3 groundNormal = transform.up;
+        lookDirection = lookDirection.normalized;
         // Project the Target Direction
         projectedDirection = Vector3.ProjectOnPlane(lookDirection, groundNormal).normalized;
 
@@ -132,7 +146,7 @@ public class HastarBehaviour : MonoBehaviour
     void ApplyCustomGravity()
     {
         RaycastHit hit;
-        Vector3 groundNormal = (sphereTransform.position - transform.position); // Default to up if no ground is hit
+        Vector3 groundNormal = (CenterTransform.position - transform.position); // Default to up if no ground is hit
 
         if (Physics.Raycast(transform.position, -transform.up, out hit, raycastDistance))
         {
@@ -188,7 +202,7 @@ public class HastarBehaviour : MonoBehaviour
     void MoveForward()
     {
         /*Vector3 moveDirection = (targetObject.position - transform.position).normalized;
-        moveDirection = Vector3.ProjectOnPlane(moveDirection, (transform.position - sphereTransform.position).normalized);
+        moveDirection = Vector3.ProjectOnPlane(moveDirection, (transform.position - CenterTransform.position).normalized);
         moveDirection = moveDirection.normalized;
         Debug.Log($"moveDirection: {moveDirection}");*/
         if(rb.velocity.magnitude < maxSpeed)
