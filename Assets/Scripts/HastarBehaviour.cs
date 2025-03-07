@@ -10,13 +10,14 @@ public class HastarBehaviour : MonoBehaviour
     public float raycastDistance = 1f;
     public Transform playerTransform;
     public float minSpeed = 1f;
-    public float targetSpeed = 10f;
     public float jumpForce = 5f;
     public float jumpAngle = 45f;
     public GameObject upperBound;
     public GameObject lowerBound;
     public float playerHastarYDiff = 0.1f;
-    public Transform CenterTransform;
+    public Transform centerTransform;
+    public GameObject lastCol;
+    public float groundToWallSpeedRatio = 1.5f;
 
     private Rigidbody rb;
     private Animator animator;
@@ -41,24 +42,24 @@ public class HastarBehaviour : MonoBehaviour
 
             // 2. Calculate Speed
             float speed = velocity.magnitude;
-            //Debug.Log($"speed: {speed}");
+            Debug.Log($"speed: {speed}");
 
             if (speed > (minSpeed + stuckTimeElapsed) && !isJumping)
             {
-                lookAt(targetObject.position);
+                lookTowards(targetObject.position - transform.position);
             }
-
+            
             MoveForward();
 
-            if(speed < targetSpeed && speed > minSpeed)
+            /*if(speed < targetSpeed && speed > minSpeed)
             {
                 /*transform.Rotate(transform.right * -rotationSpeed * stuckTimeElapsed * Time.deltaTime);
                 if(stuckTimeElapsed == 0f)
-                    rb.AddForce(transform.up * jumpImpulse, ForceMode.Impulse);*/
+                    rb.AddForce(transform.up * jumpImpulse, ForceMode.Impulse);
                 //stuckTimeElapsed += Time.deltaTime;
             }else{
                 stuckTimeElapsed = 0f;
-            }
+            }*/
             //Debug.Log($"stuck time: {stuckTimeElapsed}");
 
             // 3. Map Speed to Animation Speed Multiplier
@@ -85,32 +86,22 @@ public class HastarBehaviour : MonoBehaviour
                 rb.angularVelocity = Vector3.zero;
                 rb.velocity = Vector3.zero;
                 rb.AddForce((transform.up + transform.forward/5f) * jumpForce * 2f, ForceMode.Impulse);
-                isJumping = true;
-                Debug.Log("colUp");
+                lastCol = upperBound;
+                //Debug.Log("colUp");
             }else
             if (other.gameObject == lowerBound && playerTransform.position.y - playerHastarYDiff > transform.position.y)
             {
-                lookTowards(transform.position - CenterTransform.position);
+                lookTowards(transform.position - centerTransform.position);
                 rb.angularVelocity = Vector3.zero;
                 rb.velocity = Vector3.zero;
                 transform.Rotate(Vector3.right * -jumpAngle);
                 rb.AddForce((transform.forward) * jumpForce, ForceMode.Impulse);
-                isJumping = true;
-                Debug.Log("colDown");
+                lastCol = lowerBound;
+                //Debug.Log("colDown");
             }
+            toggleJump();
             Invoke("toggleJump", 3f);
         }
-    }
-
-    void lookAt(Vector3 targetPosition)
-    {
-        Vector3 groundNormal = transform.up;
-        Vector3 lookDirection = (targetPosition - transform.position).normalized;
-        // Project the Target Direction
-        projectedDirection = Vector3.ProjectOnPlane(lookDirection, groundNormal).normalized;
-
-        Quaternion targetRotation = Quaternion.LookRotation(projectedDirection, transform.up);
-        transform.rotation = targetRotation;
     }
 
     void lookTowards(Vector3 lookDirection)
@@ -140,13 +131,28 @@ public class HastarBehaviour : MonoBehaviour
 
     void toggleJump()
     {
-        isJumping = false;
+        if(isJumping)
+        {
+            if(lastCol == upperBound)
+            {
+                minSpeed *= groundToWallSpeedRatio;
+                maxSpeed *= groundToWallSpeedRatio;
+            }
+            else
+            if(lastCol == lowerBound)
+            {
+                minSpeed *= 1/groundToWallSpeedRatio;
+                maxSpeed *= 1/groundToWallSpeedRatio;
+            }
+        }
+
+        isJumping = !isJumping;
     }
 
     void ApplyCustomGravity()
     {
         RaycastHit hit;
-        Vector3 groundNormal = (CenterTransform.position - transform.position); // Default to up if no ground is hit
+        Vector3 groundNormal = (centerTransform.position - transform.position); // Default to up if no ground is hit
 
         if (Physics.Raycast(transform.position, -transform.up, out hit, raycastDistance))
         {
@@ -202,7 +208,7 @@ public class HastarBehaviour : MonoBehaviour
     void MoveForward()
     {
         /*Vector3 moveDirection = (targetObject.position - transform.position).normalized;
-        moveDirection = Vector3.ProjectOnPlane(moveDirection, (transform.position - CenterTransform.position).normalized);
+        moveDirection = Vector3.ProjectOnPlane(moveDirection, (transform.position - centerTransform.position).normalized);
         moveDirection = moveDirection.normalized;
         Debug.Log($"moveDirection: {moveDirection}");*/
         if(rb.velocity.magnitude < maxSpeed)
