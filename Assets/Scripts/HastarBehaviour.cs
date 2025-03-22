@@ -42,14 +42,16 @@ public class HastarBehaviour : MonoBehaviour
 
             // 2. Calculate Speed
             float speed = velocity.magnitude;
-            Debug.Log($"speed: {speed}");
+            //Debug.Log($"speed: {speed}");
 
             if (speed > (minSpeed + stuckTimeElapsed) && !isJumping)
             {
                 lookTowards(targetObject.position - transform.position);
             }
-            
-            MoveForward();
+            if((targetObject.position - transform.position).magnitude > 5f)
+                MoveForward();
+            else
+                rb.velocity = Vector3.zero;
 
             /*if(speed < targetSpeed && speed > minSpeed)
             {
@@ -88,6 +90,8 @@ public class HastarBehaviour : MonoBehaviour
                 rb.AddForce((transform.up + transform.forward/5f) * jumpForce * 2f, ForceMode.Impulse);
                 lastCol = upperBound;
                 //Debug.Log("colUp");
+                toggleJump();
+                Invoke("toggleJump", 3f);
             }else
             if (other.gameObject == lowerBound && playerTransform.position.y - playerHastarYDiff > transform.position.y)
             {
@@ -98,9 +102,9 @@ public class HastarBehaviour : MonoBehaviour
                 rb.AddForce((transform.forward) * jumpForce, ForceMode.Impulse);
                 lastCol = lowerBound;
                 //Debug.Log("colDown");
+                toggleJump();
+                Invoke("toggleJump", 3f);
             }
-            toggleJump();
-            Invoke("toggleJump", 3f);
         }
     }
 

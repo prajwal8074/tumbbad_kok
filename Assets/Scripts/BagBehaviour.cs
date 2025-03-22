@@ -16,14 +16,14 @@ public class BagBehaviour : MonoBehaviour, IInteractable
     public void Interact(GameObject interactor)
     {
         // ... (pickup logic)
-        SpawnItems();
+        itemPrefab.GetComponent<CoinBehaviour>().SpawnItems(transform, itemCount, throwForce);
         Destroy(gameObject);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        //Interact(gameObject);
     }
 
     // Update is called once per frame
@@ -31,24 +31,5 @@ public class BagBehaviour : MonoBehaviour, IInteractable
     {
         LMBDown = Input.GetMouseButton(0);
         LMBUp = Input.GetMouseButtonUp(0);
-    }
-
-    void SpawnItems()
-    {
-        for (int i = 0; i < itemCount; i++)
-        {
-            GameObject newItem = Instantiate(itemPrefab, transform.position, Quaternion.identity);
-            newItem.transform.parent = transform.parent;
-            newItem.name = itemPrefab.name;
-            newItem.SetActive(true);
-            Rigidbody rb = newItem.GetComponent<Rigidbody>();
-
-            if (rb != null)
-            {
-                // Apply a random force
-                Vector3 randomDirection = Random.insideUnitSphere;
-                rb.AddForce(randomDirection * throwForce, ForceMode.Impulse);
-            }
-        }
     }
 }
