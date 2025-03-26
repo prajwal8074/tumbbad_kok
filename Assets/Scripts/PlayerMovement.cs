@@ -11,7 +11,7 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = 10f;
     public float jumpForce = 8f;
     public float slideForce = 2f;
-    public Light sunLight;
+    public GameObject sunLight;
     public float headBobFrequency = 2f; // Adjust to control bobbing speed
     public float headBobAmplitude = 0.25f; // Adjust to control bobbing height
     public float idleBobFactor = 0.5f;
@@ -35,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
-        sunLight.enabled = false;
+        sunLight.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
         previousPosition = transform.position;
