@@ -12,12 +12,20 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 8f;
     public float slideForce = 2f;
     public GameObject sunLight;
-    public float headBobFrequency = 2f; // Adjust to control bobbing speed
+    public float headBobFrequencyMax = 2f; // Adjust to control bobbing speed
     public float headBobAmplitude = 0.25f; // Adjust to control bobbing height
     public float idleBobFactor = 0.5f;
     public float armsRotationSpeed = 2f;
     public Camera playerCamera;
     public GameObject arms;
+    public float minSpeed = 0f;
+    public float maxSpeed = 5f;
+    public float minPitch = 0.8f;
+    public float maxPitch = 1.5f;
+
+    private Vector3 lastPosition;
+    private Vector3 actualVelocity = Vector3.zero;
+    private AudioSource footstepAudio;
 
     private CharacterController controller;
     private Vector3 moveDirection;
@@ -27,11 +35,15 @@ public class PlayerMovement : MonoBehaviour
     private float headBobTime;
     private Vector3 originalCameraPosition;
     private Vector3 originalArmsPosition;
+    private float headBobFrequency;
+    private GameObject leftArm;
 
     public float interactionDistance = 2f;
     public TextMeshProUGUI pickupText;
     private IInteractable currentInteractable;
     private MonoBehaviour currentOutlineScript;
+    private Inventory inventory;
+    private GameObject currentItem;
 
     void Start()
     {
@@ -43,6 +55,12 @@ public class PlayerMovement : MonoBehaviour
         pickupText.gameObject.SetActive(false);
         originalCameraPosition = playerCamera.transform.localPosition;
         originalArmsPosition = arms.transform.localPosition;
+        footstepAudio = GetComponent<AudioSource>();
+        lastPosition = transform.position;
+        headBobFrequency = headBobFrequencyMax;
+        inventory = GetComponent<Inventory>();
+
+        leftArm = FindDeepChild(gameObject, "LeftArm");
     }
 
     // Update is called once per frame
@@ -82,6 +100,21 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             moveDirection = Vector3.zero; // No input, no movement
+        }
+
+        if (horizontalInput != 0 || verticalInput != 0)
+        {
+            ActivateFootstep();
+            float speed = actualVelocity.magnitude;
+            float speedFactor = (speed/maxSpeed);
+            headBobFrequency = headBobFrequencyMax*speedFactor;
+            float pitch = maxPitch*speedFactor;
+            footstepAudio.pitch = pitch;
+        }
+        else
+        {
+            DeactivateFootstep();
+            headBobFrequency = headBobFrequencyMax;
         }
 
         // Head Bobbing
@@ -129,57 +162,118 @@ public class PlayerMovement : MonoBehaviour
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, interactionDistance))
+        if (Physics.Raycast(ray, out hit, interactionDistance) && hit.collider.GetComponent<IInteractable>() != null)
         {
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
 
-            if (interactable != null)
+            currentInteractable = interactable;
+            pickupText.text = interactable.InteractionPrompt;
+            pickupText.gameObject.SetActive(true);
+
+            // Outline Logic
+            MonoBehaviour outlineScript = hit.collider.GetComponent<Outline>(); // Getting the script
+            // Check if the script exists and if it derives from the outline script
+            if (outlineScript != null)
             {
-                currentInteractable = interactable;
-                pickupText.text = interactable.InteractionPrompt;
-                pickupText.gameObject.SetActive(true);
+                currentOutlineScript = outlineScript;
+                currentOutlineScript.enabled = true; // Enable the outline script
+            }
 
-                // Outline Logic
-                MonoBehaviour outlineScript = hit.collider.GetComponent<Outline>(); // Getting the script
-                // Check if the script exists and if it derives from the outline script
-                if (outlineScript != null)
-                {
-                    currentOutlineScript = outlineScript;
-                    currentOutlineScript.enabled = true; // Enable the outline script
-                }
+            if (interactable.buttonDown)
+            {
+                float armsYRotation = arms.transform.localEulerAngles.y;
+                if(armsYRotation < 60f)
+                    arms.transform.localEulerAngles = new Vector3(0, armsYRotation+1f*armsRotationSpeed, 0);
+            }
 
-                if (interactable.buttonDown)
+            if (interactable.buttonUp)
+            {
+                if(inventory.IsInventoryEmpty())
                 {
-                    float armsYRotation = arms.transform.localEulerAngles.y;
-                    if(armsYRotation < 60f)
-                        arms.transform.localEulerAngles = new Vector3(0, armsYRotation+1f*armsRotationSpeed, 0);
-                }
-
-                if (interactable.buttonUp)
-                {
-                    interactable.Interact(gameObject);
-                    currentInteractable = null;
-                    pickupText.gameObject.SetActive(false);
-                    if (currentOutlineScript != null)
+                    if(hit.collider.GetComponent<InventoryItem>() != null)
                     {
-                        currentOutlineScript.enabled = false;
-                        currentOutlineScript = null;
+                        currentItem = hit.collider.GetComponent<InventoryItem>().inHandObject;
+                        currentItem.SetActive(true);
                     }
                 }
-            }
-            else
-            {
-                ClearInteractable();
+                interactable.Interact(gameObject);
+                currentInteractable = null;
+                pickupText.gameObject.SetActive(false);
+                if (currentOutlineScript != null)
+                {
+                    currentOutlineScript.enabled = false;
+                    currentOutlineScript = null;
+                }
+
+                Vector3 leftArmRotation = leftArm.transform.localEulerAngles;
+                if(!inventory.IsInventoryEmpty())
+                {
+                    leftArmRotation.x = 45f;
+                    leftArmRotation.z = -30f;
+                }else{
+                    leftArmRotation.x = 23f;
+                    leftArmRotation.z = -4f;
+                }
+                leftArm.transform.localEulerAngles = leftArmRotation;
             }
         }
         else
         {
             ClearInteractable();
+
+            
         }
 
         //keep last
         motionDirection = (transform.position - previousPosition).normalized;
         previousPosition = transform.position;
+    }
+
+    void FixedUpdate() // Use FixedUpdate for physics calculations
+    {
+        // Calculate the change in position
+        Vector3 positionChange = transform.position - lastPosition;
+
+        // Calculate the velocity
+        actualVelocity = positionChange / Time.fixedDeltaTime;
+
+        // Update the last position
+        lastPosition = transform.position;
+    }
+
+    GameObject FindDeepChild(GameObject parent, string childName)
+    {
+        foreach (Transform childTransform in parent.transform)
+        {
+            GameObject child = childTransform.gameObject;
+            if (child.name.ToLower() == childName.ToLower())
+            {
+                return child;
+            }
+
+            GameObject found = FindDeepChild(child, childName);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    void ActivateFootstep()
+    {
+        if (!footstepAudio.enabled) // Avoid redundant activations
+        {
+            footstepAudio.enabled = true;
+        }
+    }
+
+    void DeactivateFootstep()
+    {
+        if (footstepAudio.enabled) // Avoid redundant deactivations
+        {
+            footstepAudio.enabled = false;
+        }
     }
 
     private void ClearInteractable()

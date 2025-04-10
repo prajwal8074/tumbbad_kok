@@ -18,6 +18,7 @@ public class HastarBehaviour : MonoBehaviour
     public Transform centerTransform;
     public GameObject lastCol;
     public float groundToWallSpeedRatio = 1.5f;
+    public GameObject WheatDoll;
 
     private Rigidbody rb;
     private Animator animator;
@@ -82,7 +83,7 @@ public class HastarBehaviour : MonoBehaviour
     {
         if(!isJumping)
         {
-            if (other.gameObject == upperBound && playerTransform.position.y - playerHastarYDiff < transform.position.y)
+            if (other.gameObject == upperBound && (targetObject != playerTransform || playerTransform.position.y - playerHastarYDiff < transform.position.y))
             {
                 lookTowards(Vector3.down);
                 rb.angularVelocity = Vector3.zero;
@@ -93,17 +94,20 @@ public class HastarBehaviour : MonoBehaviour
                 toggleJump();
                 Invoke("toggleJump", 3f);
             }else
-            if (other.gameObject == lowerBound && playerTransform.position.y - playerHastarYDiff > transform.position.y)
+            if (other.gameObject == lowerBound && (targetObject != playerTransform || playerTransform.position.y - playerHastarYDiff > transform.position.y))
             {
-                lookTowards(transform.position - centerTransform.position);
-                rb.angularVelocity = Vector3.zero;
-                rb.velocity = Vector3.zero;
-                transform.Rotate(Vector3.right * -jumpAngle);
-                rb.AddForce((transform.forward) * jumpForce, ForceMode.Impulse);
-                lastCol = lowerBound;
-                //Debug.Log("colDown");
-                toggleJump();
-                Invoke("toggleJump", 3f);
+                if(targetObject == playerTransform)
+                {
+                    lookTowards(transform.position - centerTransform.position);
+                    rb.angularVelocity = Vector3.zero;
+                    rb.velocity = Vector3.zero;
+                    transform.Rotate(Vector3.right * -jumpAngle);
+                    rb.AddForce((transform.forward) * jumpForce, ForceMode.Impulse);
+                    lastCol = lowerBound;
+                    //Debug.Log("colDown");
+                    toggleJump();
+                    Invoke("toggleJump", 3f);
+                }
             }
         }
     }
@@ -192,21 +196,54 @@ public class HastarBehaviour : MonoBehaviour
     void FindTargetObject()
     {
         targetObject = null;
-        WheatObject[] wheatObjects = GameObject.FindObjectsOfType<WheatObject>();
-        if (wheatObjects.Length > 0)
+        if (checkWheatDolls())
         {
-            foreach (WheatObject wheatObject in wheatObjects)
-            {
-                if (true)//nearest wheat object logic
-                {
-                    targetObject = wheatObject.transform;
-                }
-            }
+            targetObject = FindNearestWheatDoll(transform.position).transform;
         }else{
             targetObject = playerTransform;
-        }
+        }Debug.Log(targetObject.name);
         
         return; // Found the target, exit the loop
+    }
+
+    // Finds all active GameObjects with the exact name "WheatDoll"
+    public static bool checkWheatDolls()
+    {
+        GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
+
+        foreach (GameObject obj in allObjects)
+        {
+            if (obj.name == "WheatDoll")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Finds the nearest GameObject with the name "WheatDoll" to a given origin
+    public static GameObject FindNearestWheatDoll(Vector3 origin)
+    {
+        GameObject nearest = null;
+        float minDistance = Mathf.Infinity;
+        Vector3 currentPosition = origin;
+
+        GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
+
+        foreach (GameObject obj in allObjects)
+        {
+            if (obj.name == "WheatDoll")
+            {
+                float distance = Vector3.Distance(currentPosition, obj.transform.position);
+                if (distance < minDistance)
+                {
+                    nearest = obj;
+                    minDistance = distance;
+                }
+            }
+        }
+
+        return nearest;
     }
 
     void MoveForward()
