@@ -32,7 +32,6 @@ public class CoinBehaviour : MonoBehaviour, IInteractable
             GameObject newItem = Instantiate(gameObject, spawnTransform.position, Quaternion.identity);
             newItem.name = gameObject.name;
             newItem.SetActive(true);
-            newItem.transform.SetParent(spawnTransform.parent.parent);
             Rigidbody rb = newItem.GetComponent<Rigidbody>();
 
             if (rb != null)

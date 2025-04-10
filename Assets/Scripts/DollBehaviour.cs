@@ -5,7 +5,7 @@ public class DollBehaviour : MonoBehaviour, IInteractable
     private bool EUp = false;
     private bool EDown = false;
 
-    public string InteractionPrompt => "Press E";
+    public string InteractionPrompt => "Wheat Doll";
     public bool buttonDown => EDown;
     public bool buttonUp => EUp;
 
