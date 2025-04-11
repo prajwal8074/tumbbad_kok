@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
     private IInteractable currentInteractable;
     private MonoBehaviour currentOutlineScript;
     private Inventory inventory;
-    private GameObject currentItem;
+    private ThrowableObject currentItem;
 
     void Start()
     {
@@ -61,6 +61,8 @@ public class PlayerMovement : MonoBehaviour
         inventory = GetComponent<Inventory>();
 
         leftArm = FindDeepChild(gameObject, "LeftArm");
+
+        PositionArms(false);
     }
 
     // Update is called once per frame
@@ -181,6 +183,11 @@ public class PlayerMovement : MonoBehaviour
 
             if (interactable.buttonDown)
             {
+                PositionArms(true);
+            }
+
+            if (interactable.buttonPressed)
+            {
                 float armsYRotation = arms.transform.localEulerAngles.y;
                 if(armsYRotation < 60f)
                     arms.transform.localEulerAngles = new Vector3(0, armsYRotation+1f*armsRotationSpeed, 0);
@@ -188,12 +195,12 @@ public class PlayerMovement : MonoBehaviour
 
             if (interactable.buttonUp)
             {
-                if(inventory.IsInventoryEmpty())
+                if(hit.collider.GetComponent<InventoryItem>() != null)
                 {
-                    if(hit.collider.GetComponent<InventoryItem>() != null)
+                    if(inventory.IsInventoryEmpty())
                     {
                         currentItem = hit.collider.GetComponent<InventoryItem>().inHandObject;
-                        currentItem.SetActive(true);
+                        currentItem.gameObject.SetActive(true);
                     }
                 }
                 interactable.Interact(gameObject);
@@ -205,28 +212,41 @@ public class PlayerMovement : MonoBehaviour
                     currentOutlineScript = null;
                 }
 
-                Vector3 leftArmRotation = leftArm.transform.localEulerAngles;
-                if(!inventory.IsInventoryEmpty())
-                {
-                    leftArmRotation.x = 45f;
-                    leftArmRotation.z = -30f;
-                }else{
-                    leftArmRotation.x = 23f;
-                    leftArmRotation.z = -4f;
-                }
-                leftArm.transform.localEulerAngles = leftArmRotation;
+                PositionArms(false);
+            }
+
+            if(currentItem != null)
+            {
+                currentItem.canThrow = false;
             }
         }
         else
         {
             ClearInteractable();
 
-            
+            if(currentItem != null)
+            {
+                currentItem.canThrow = true;
+            }
         }
 
         //keep last
         motionDirection = (transform.position - previousPosition).normalized;
         previousPosition = transform.position;
+    }
+
+    public void PositionArms(bool Interacting)
+    {
+        Vector3 leftArmRotation = leftArm.transform.localEulerAngles;
+        if(!inventory.IsInventoryEmpty() && !Interacting)
+        {
+            leftArmRotation.x = 45f;
+            leftArmRotation.z = -30f;
+        }else{
+            leftArmRotation.x = 23f;
+            leftArmRotation.z = -4f;
+        }
+        leftArm.transform.localEulerAngles = leftArmRotation;
     }
 
     void FixedUpdate() // Use FixedUpdate for physics calculations

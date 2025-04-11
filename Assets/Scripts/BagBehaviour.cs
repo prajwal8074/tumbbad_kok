@@ -7,10 +7,12 @@ public class BagBehaviour : MonoBehaviour, IInteractable
     public float throwForce = 1f; // Force applied to items
 
     private bool LMBUp = false;
+    private bool LMBPressed = false;
     private bool LMBDown = false;
 
     public string InteractionPrompt => $"{gameObject.name}";
     public bool buttonDown => LMBDown;
+    public bool buttonPressed => LMBPressed;
     public bool buttonUp => LMBUp;
 
     public void Interact(GameObject interactor)
@@ -29,7 +31,8 @@ public class BagBehaviour : MonoBehaviour, IInteractable
     // Update is called once per frame
     void Update()
     {
-        LMBDown = Input.GetMouseButton(0);
+        LMBDown = Input.GetMouseButtonDown(0);
+        LMBPressed = Input.GetMouseButton(0);
         LMBUp = Input.GetMouseButtonUp(0);
     }
 }

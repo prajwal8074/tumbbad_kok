@@ -9,6 +9,9 @@ public class ThrowableObject : MonoBehaviour
     public float trajectoryLineWidth = 0.1f;
     public Material trajectoryLineMaterial;
     public GameObject ThrownObject;
+    public GameObject InventoryHolder;
+
+    public bool canThrow = false;
 
     private Rigidbody rb;
     private LineRenderer trajectoryRenderer;
@@ -33,20 +36,26 @@ public class ThrowableObject : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
+        if(canThrow)
         {
-            StartChargeThrow();
-        }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                StartChargeThrow();
+            }
 
-        if (isChargingThrow)
-        {
-            UpdateThrowDirection();
-            PredictTrajectory();
-        }
+            if (isChargingThrow)
+            {
+                UpdateThrowDirection();
+                PredictTrajectory();
+            }
 
-        if (Input.GetKeyUp(KeyCode.E))
-        {
-            ReleaseThrow();
+            if (Input.GetKeyUp(KeyCode.E))
+            {
+                ReleaseThrow();
+            }
+        }else{
+            isChargingThrow = false;
+            trajectoryRenderer.enabled = false;
         }
     }
 
@@ -123,6 +132,8 @@ public class ThrowableObject : MonoBehaviour
         trajectoryRenderer.enabled = false;
 
         GameObject thrownObject = Instantiate(ThrownObject);
+        InventoryHolder.GetComponent<Inventory>().RemoveItem(ThrownObject.GetComponent<InventoryItem>().itemName);
+        InventoryHolder.GetComponent<PlayerMovement>().PositionArms(false);
         thrownObject.transform.position = transform.position;
         thrownObject.transform.rotation = transform.rotation;
         thrownObject.name = gameObject.name.Replace("InHand", "");

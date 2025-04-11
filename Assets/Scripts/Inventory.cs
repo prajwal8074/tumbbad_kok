@@ -28,9 +28,9 @@ public class Inventory : MonoBehaviour
         public string itemName;
         public Sprite itemIcon;
         public int stackSize = 1; // How many of this item can be in one slot
-        public GameObject inHandObject;
+        public ThrowableObject inHandObject;
 
-        public InventoryItem(string itemName, Sprite itemIcon, int stackSize, GameObject inHandObject)
+        public InventoryItem(string itemName, Sprite itemIcon, int stackSize, ThrowableObject inHandObject)
         {
             this.itemName = itemName;
             this.itemIcon = itemIcon;
