@@ -3,10 +3,12 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-    public int inventorySize = 10; // Number of inventory slots
+    public int inventorySize = 5; // Number of inventory slots
+    [HideInInspector]
     public List<InventorySlot> inventorySlots;
-
     public Sprite defaultItemIcon;
+
+    private DisplayInventory displayInventory;
 
     [System.Serializable]
     public class InventorySlot
@@ -44,9 +46,11 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    private void Awake()
+    private void Start()
     {
         InitializeInventorySlots();
+        displayInventory = GetComponent<DisplayInventory>();
+        //displayInventory.UpdateInventoryDisplay();
     }
 
     private void InitializeInventorySlots()
@@ -56,6 +60,12 @@ public class Inventory : MonoBehaviour
 
     public bool AddItem(InventoryItem itemToAdd)
     {
+        bool wasInventoryEmpty = false;
+        if(IsInventoryEmpty())
+        {
+            wasInventoryEmpty = true;
+        }
+        
         // Try to stack with existing items first
         for (int i = 0; i < inventorySlots.Count; i++)
         {
@@ -66,6 +76,7 @@ public class Inventory : MonoBehaviour
 
                 int toStack = Mathf.Min(canStack, needed);
                 inventorySlots[i].currentStack += toStack;
+                displayInventory.UpdateInventoryDisplay();
                 return true; // Assuming we are adding one at a time for simplicity
             }
         }
@@ -80,6 +91,12 @@ public class Inventory : MonoBehaviour
                     itemToAdd.itemIcon = defaultItemIcon;
                 }
                 inventorySlots[i] = new InventorySlot(itemToAdd, 1);
+                displayInventory.UpdateInventoryDisplay();
+                if(wasInventoryEmpty)
+                {
+                    displayInventory.SelectedIndex = 0;
+                    displayInventory.Select();
+                }
                 return true;
             }
         }
@@ -90,6 +107,7 @@ public class Inventory : MonoBehaviour
 
     public bool RemoveItem(string itemName)
     {
+        displayInventory.Unselect();
         for (int i = 0; i < inventorySlots.Count; i++)
         {
             if (inventorySlots[i] != null && inventorySlots[i].item != null && inventorySlots[i].item.itemName == itemName && inventorySlots[i].currentStack > 0)
@@ -99,6 +117,9 @@ public class Inventory : MonoBehaviour
                 {
                     inventorySlots[i] = null; // Remove the empty slot
                 }
+                displayInventory.UpdateInventoryDisplay();
+                if(IsInventoryEmpty())
+                    displayInventory.SelectedIndex = -1;
                 return true;
             }
         }
@@ -108,6 +129,7 @@ public class Inventory : MonoBehaviour
 
     public bool RemoveItem(string itemName, int amount)
     {
+        displayInventory.Unselect();
         int removedCount = 0;
         for (int i = 0; i < inventorySlots.Count; i++)
         {
@@ -121,6 +143,10 @@ public class Inventory : MonoBehaviour
                 {
                     inventorySlots[i] = null; // Remove the empty slot
                 }
+
+                displayInventory.UpdateInventoryDisplay();
+                if(IsInventoryEmpty())
+                    displayInventory.SelectedIndex = -1;
 
                 if (removedCount >= amount)
                 {

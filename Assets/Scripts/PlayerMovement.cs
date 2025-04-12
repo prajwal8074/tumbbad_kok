@@ -43,7 +43,9 @@ public class PlayerMovement : MonoBehaviour
     private IInteractable currentInteractable;
     private MonoBehaviour currentOutlineScript;
     private Inventory inventory;
-    private ThrowableObject currentItem;
+    private DisplayInventory displayInventory;
+    [HideInInspector]
+    public ThrowableObject currentItem;
 
     void Start()
     {
@@ -59,6 +61,7 @@ public class PlayerMovement : MonoBehaviour
         lastPosition = transform.position;
         headBobFrequency = headBobFrequencyMax;
         inventory = GetComponent<Inventory>();
+        displayInventory = GetComponent<DisplayInventory>();
 
         leftArm = FindDeepChild(gameObject, "LeftArm");
 
@@ -68,6 +71,8 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        currentItem = displayInventory.currentItem;
+
         float mouseX = Input.GetAxis("Mouse X")*mouseSensitivity*Time.deltaTime;
         float mouseY = -Input.GetAxis("Mouse Y")*mouseSensitivity*Time.deltaTime;
 
@@ -184,6 +189,10 @@ public class PlayerMovement : MonoBehaviour
             if (interactable.buttonDown)
             {
                 PositionArms(true);
+                if(currentItem != null)
+                {
+                    currentItem.gameObject.SetActive(false);
+                }
             }
 
             if (interactable.buttonPressed)
@@ -195,14 +204,6 @@ public class PlayerMovement : MonoBehaviour
 
             if (interactable.buttonUp)
             {
-                if(hit.collider.GetComponent<InventoryItem>() != null)
-                {
-                    if(inventory.IsInventoryEmpty())
-                    {
-                        currentItem = hit.collider.GetComponent<InventoryItem>().inHandObject;
-                        currentItem.gameObject.SetActive(true);
-                    }
-                }
                 interactable.Interact(gameObject);
                 currentInteractable = null;
                 pickupText.gameObject.SetActive(false);
@@ -212,7 +213,10 @@ public class PlayerMovement : MonoBehaviour
                     currentOutlineScript = null;
                 }
 
-                PositionArms(false);
+                if(currentItem != null)
+                {
+                    currentItem.gameObject.SetActive(true);
+                }
             }
 
             if(currentItem != null)
@@ -223,7 +227,8 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             ClearInteractable();
-
+            
+            PositionArms(false);
             if(currentItem != null)
             {
                 currentItem.canThrow = true;
@@ -238,7 +243,7 @@ public class PlayerMovement : MonoBehaviour
     public void PositionArms(bool Interacting)
     {
         Vector3 leftArmRotation = leftArm.transform.localEulerAngles;
-        if(!inventory.IsInventoryEmpty() && !Interacting)
+        if(currentItem != null && !Interacting)
         {
             leftArmRotation.x = 45f;
             leftArmRotation.z = -30f;

@@ -31,8 +31,10 @@ public class InventoryItem : MonoBehaviour, IInteractable
     {
         // ... (pickup logic)
         //Debug.Log(interactor.GetComponent<Inventory>().IsInventoryEmpty());
-        interactor.GetComponent<Inventory>().AddItem(new Inventory.InventoryItem(itemName, itemIcon, stackSize, inHandObject));
-        Destroy(gameObject);
+        if(interactor.GetComponent<Inventory>().AddItem(new Inventory.InventoryItem(itemName, itemIcon, stackSize, inHandObject)))
+        {
+            Destroy(gameObject);
+        }
     }
 
     // Start is called before the first frame update

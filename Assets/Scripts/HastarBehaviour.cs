@@ -22,7 +22,8 @@ public class HastarBehaviour : MonoBehaviour
 
     private Rigidbody rb;
     private Animator animator;
-    private Transform targetObject;
+    [HideInInspector]
+    public Transform targetObject;
     private Vector3 projectedDirection;
     private float stuckTimeElapsed = 0f;
     private bool isJumping = false;

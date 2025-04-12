@@ -133,7 +133,10 @@ public class ThrowableObject : MonoBehaviour
 
         GameObject thrownObject = Instantiate(ThrownObject);
         InventoryHolder.GetComponent<Inventory>().RemoveItem(ThrownObject.GetComponent<InventoryItem>().itemName);
-        InventoryHolder.GetComponent<PlayerMovement>().PositionArms(false);
+        PlayerMovement playerMovement = InventoryHolder.GetComponent<PlayerMovement>();
+        playerMovement.currentItem.gameObject.SetActive(false);
+        playerMovement.currentItem = null;
+        playerMovement.PositionArms(false);
         thrownObject.transform.position = transform.position;
         thrownObject.transform.rotation = transform.rotation;
         thrownObject.name = gameObject.name.Replace("InHand", "");

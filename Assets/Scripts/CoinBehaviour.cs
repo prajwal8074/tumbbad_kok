@@ -7,7 +7,7 @@ public class CoinBehaviour : MonoBehaviour
         for (int i = 0; i < itemCount; i++)
         {
             GameObject newItem = Instantiate(gameObject, spawnTransform.position, Quaternion.identity);
-            newItem.name = gameObject.name;
+            newItem.name = gameObject.name.Replace("Reference", "");
             newItem.SetActive(true);
             Rigidbody rb = newItem.GetComponent<Rigidbody>();
 
