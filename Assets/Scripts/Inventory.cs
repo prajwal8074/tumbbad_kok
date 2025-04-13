@@ -10,7 +10,6 @@ public class Inventory : MonoBehaviour
 
     private DisplayInventory displayInventory;
 
-    [System.Serializable]
     public class InventorySlot
     {
         public InventoryItem item;
@@ -24,7 +23,6 @@ public class Inventory : MonoBehaviour
     }
 
     // Base class for all inventory items
-    [System.Serializable]
     public class InventoryItem
     {
         public string itemName;

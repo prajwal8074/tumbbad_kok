@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Base class for all inventory items
-[System.Serializable]
 public class InventoryItem : MonoBehaviour, IInteractable
 {
     public string itemName;

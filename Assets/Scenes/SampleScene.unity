@@ -3648,7 +3648,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventorySize: 5
-  inventorySlots: []
   defaultItemIcon: {fileID: 21300000, guid: 9e9549b6c6787d9538e683d99b3d0116, type: 3}
 --- !u!114 &900849608
 MonoBehaviour:
