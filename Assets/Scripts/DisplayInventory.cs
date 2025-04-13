@@ -129,8 +129,6 @@ public class DisplayInventory : MonoBehaviour
             if(playerInventory.inventorySlots[SelectedIndex] != null)
             {
                 Select();
-            }else{
-                SelectNext();
             }
         }
     }

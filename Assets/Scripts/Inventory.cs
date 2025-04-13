@@ -116,10 +116,12 @@ public class Inventory : MonoBehaviour
                 if (inventorySlots[i].currentStack <= 0)
                 {
                     inventorySlots[i] = null; // Remove the empty slot
+                    displayInventory.SelectedIndex = i;
                 }
                 displayInventory.UpdateInventoryDisplay();
                 if(IsInventoryEmpty())
                     displayInventory.SelectedIndex = -1;
+                Debug.Log(displayInventory.SelectedIndex);
                 return true;
             }
         }
@@ -127,7 +129,7 @@ public class Inventory : MonoBehaviour
         return false;
     }
 
-    public bool RemoveItem(string itemName, int amount)
+    /*public bool RemoveItem(string itemName, int amount)
     {
         displayInventory.Unselect();
         int removedCount = 0;
@@ -156,7 +158,7 @@ public class Inventory : MonoBehaviour
         }
         Debug.Log(amount + " of " + itemName + " not found in inventory.");
         return false;
-    }
+    }*/
 
     public bool HasItem(string itemName)
     {
