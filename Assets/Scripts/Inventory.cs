@@ -69,11 +69,12 @@ public class Inventory : MonoBehaviour
         {
             if (inventorySlots[i] != null && inventorySlots[i].item != null && inventorySlots[i].item.itemName == itemToAdd.itemName && inventorySlots[i].currentStack < inventorySlots[i].item.stackSize)
             {
-                int canStack = itemToAdd.stackSize; // We are adding one at a time here
+                /*int canStack = itemToAdd.stackSize; // We are adding one at a time here
                 int needed = inventorySlots[i].item.stackSize - inventorySlots[i].currentStack;
 
                 int toStack = Mathf.Min(canStack, needed);
-                inventorySlots[i].currentStack += toStack;
+                inventorySlots[i].currentStack += toStack;*/
+                inventorySlots[i].currentStack++;
                 displayInventory.UpdateInventoryDisplay();
                 return true; // Assuming we are adding one at a time for simplicity
             }

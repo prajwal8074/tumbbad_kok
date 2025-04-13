@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class DisplayInventory : MonoBehaviour
 {
@@ -101,6 +102,8 @@ public class DisplayInventory : MonoBehaviour
             Image slotImage = inventorySlots[i].GetComponent<Image>(); // This is the Image component of the Slot (Slot0, Slot1, etc.)
             GameObject itemImageObject = slotImage.transform.GetChild(0).gameObject; // Get the *GameObject* of the child, which is your item image.  Important!
             Image itemImage = itemImageObject.GetComponent<Image>(); //Get the Image component from the child game object.
+            GameObject itemTextObject = slotImage.transform.GetChild(1).gameObject; // Get the *GameObject* of the child, which is your item image.  Important!
+            TMP_Text itemText = itemTextObject.GetComponent<TMP_Text>();
 
             if (i < inventory.Count && inventory[i] != null && inventory[i].item != null)
             {
@@ -111,7 +114,10 @@ public class DisplayInventory : MonoBehaviour
                 if (itemImage != null)
                 {
                     itemImage.sprite = slotData.item.itemIcon;  // Set the sprite of the *child* Image.
-                    itemImageObject.SetActive(true); // Make the child Image (the item icon) visible.
+                }
+                if (itemText != null)
+                {
+                    itemText.text = slotData.currentStack.ToString();  // Set the sprite of the *child* Image.
                 }
             }
             else
@@ -119,8 +125,11 @@ public class DisplayInventory : MonoBehaviour
                 slotImage.gameObject.SetActive(false); // Hide the slot Image.
                 if (itemImage != null)
                 {
-                    itemImage.sprite = null; // Clear the sprite
-                    itemImageObject.SetActive(false);   // Hide the child Image.
+                    itemImage.sprite = playerInventory.defaultItemIcon; // Clear the sprite
+                }
+                if (itemText != null)
+                {
+                    itemText.text = "0"; // Clear the sprite
                 }
             }
         }
